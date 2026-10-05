@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="{{ language }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="dark">
+<title>PS5 Command Hub</title>
+<!--
+  Everything this page loads comes from this server. No CDN, no remote font, no
+  analytics, no beacon. The Safety tab re-verifies that claim by scanning these
+  files at startup, so if a remote reference is ever added it shows up there.
+
+  Scripts are classic (no modules) and ES2017-level: the PS5 browser is WebKit and
+  not always a recent one. Styles are external only, because the CSP forbids
+  inline style and script.
+-->
+<link rel="icon" href="/static/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/css/tokens.css">
+<link rel="stylesheet" href="/static/css/layout.css">
+<link rel="stylesheet" href="/static/css/components.css">
+</head>
+<body
+  data-overscan="{{ overscan }}"
+  data-cards="{{ cards_per_row }}"
+  data-performance="{{ performance_mode }}"
+  data-language="{{ language }}"
+  data-poll="{{ poll_interval }}"
+  data-toast-position="{{ toast_position }}"
+  data-version="{{ version }}"
+  data-base-url="{{ base_url }}">
+
+<div id="ambient"></div>
+
+<!-- Icon sprite. Inlined so there is no second request and no remote asset. -->
+<div class="hidden">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true">
+  <defs>
+    <g id="i-library" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="4" width="7" height="16" rx="1.5"/><rect x="14" y="4" width="7" height="10" rx="1.5"/><path d="M14 17h7"/><path d="M14 20h7"/>
+    </g>
+    <g id="i-queue" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 7h11"/><path d="M4 12h11"/><path d="M4 17h7"/><path d="M17 15l3 3 3-3" transform="translate(-3 0)"/>
+    </g>
+    <g id="i-console" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2.5" y="7" width="19" height="10" rx="3"/><path d="M7 12h3M8.5 10.5v3"/><circle cx="16" cy="11" r="1"/><circle cx="18" cy="13.5" r="1"/>
+    </g>
+    <g id="i-browser" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c2.5 2.6 2.5 15.4 0 18M12 3c-2.5 2.6-2.5 15.4 0 18"/>
+    </g>
+    <g id="i-shield" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3l7 3v6c0 4.2-2.9 7.7-7 9-4.1-1.3-7-4.8-7-9V6z"/><path d="M9 12l2 2 4-4"/>
+    </g>
+    <g id="i-recovery" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3v4"/><path d="M5.5 6.5A9 9 0 1 0 12 3"/><path d="M9 10h6l-.7 9.5a1.5 1.5 0 0 1-1.5 1.4h-1.6a1.5 1.5 0 0 1-1.5-1.4z"/>
+    </g>
+    <g id="i-settings" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.2 5.2l2.1 2.1M16.7 16.7l2.1 2.1M18.8 5.2l-2.1 2.1M7.3 16.7l-2.1 2.1"/>
+    </g>
+    <g id="i-refresh" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.6"/><path d="M20 5v6h-6"/></g>
+    <g id="i-plus" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></g>
+    <g id="i-play" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></g>
+    <g id="i-pause" fill="currentColor"><rect x="7" y="5.5" width="3.4" height="13" rx="1"/><rect x="13.6" y="5.5" width="3.4" height="13" rx="1"/></g>
+    <g id="i-stop" fill="currentColor"><rect x="6.5" y="6.5" width="11" height="11" rx="2"/></g>
+    <g id="i-up" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 14l6-6 6 6"/></g>
+    <g id="i-down" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 10l6 6 6-6"/></g>
+    <g id="i-trash" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V4.5h6V7"/><path d="M6.5 7l.9 13h9.2l.9-13"/></g>
+    <g id="i-check" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5l4.5 4.5L19.5 6.5"/></g>
+    <g id="i-star" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l2.5 5.2 5.5.8-4 3.9 1 5.6-5-2.8-5 2.8 1-5.6-4-3.9 5.5-.8z"/></g>
+    <g id="i-home" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7"/><path d="M6.5 9.5V20h11V9.5"/></g>
+    <g id="i-back" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></g>
+    <g id="i-forward" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6l6 6-6 6"/></g>
+    <g id="i-expand" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 15v5h-5M20 9V4h-5M4 15v5h5"/></g>
+    <g id="i-bookmark" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v16l-5-4-5 4z"/></g>
+    <g id="i-terminal" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><path d="M7.5 10l2.5 2-2.5 2M12.5 14h4"/></g>
+    <g id="i-x" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></g>
+    <g id="i-download" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v10"/><path d="M8 11l4 4 4-4"/><path d="M5 19h14"/></g>
+    <g id="i-lock" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></g>
+    <g id="i-music" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="17.5" r="2.5"/><circle cx="17.5" cy="15.5" r="2.5"/><path d="M9.5 17.5V7l10.5-2v10.5"/></g>
+    <g id="i-save" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h11l3 3v11H5z"/><path d="M9 5v5h6V5"/><rect x="8.5" y="13" width="7" height="6"/></g>
+  </defs>
+</svg>
+</div>
+
+<div id="app">
+
+  <!-- ======================================================= navigation ==== -->
+  <nav class="rail" aria-label="Sections">
+    <div class="rail__brand">
+      <strong>PS5</strong>
+      <span>Hub</span>
+    </div>
+
+    <div class="rail__nav" id="rail-nav">
+      <button class="rail__btn is-active" data-focusable data-nav-group="rail" data-section="library" type="button">
+        <svg viewBox="0 0 24 24"><use xlink:href="#i-library"/></svg><span data-i18n="nav.library">Library</span>
+      </button>
+      <button class="rail__btn" data-focusable data-nav-group="rail" data-section="queue" type="button">
+        <svg viewBox="0 0 24 24"><use xlink:href="#i-queue"/></svg><span data-i18n="nav.queue">Queue</span>
+        <i class="pip hidden" id="pip-queue"></i>
+      </button>
+      <button class="rail__btn" data-focusable data-nav-group="rail" data-section="console" type="button">
+        <svg viewBox="0 0 24 24"><use xlink:href="#i-console"/></svg><span data-i18n="nav.console">Console</span>
+        <i class="pip" id="pip-console"></i>
+      </button>
+      <button class="rail__btn" data-focusable data-nav-group="rail" data-section="browser" type="button">
+        <svg viewBox="0 0 24 24"><use xlink:href="#i-browser"/></svg><span data-i18n="nav.browser">Browser</span>
+      </button>
+      <button class="rail__btn" data-focusable data-nav-group="rail" data-section="safety" type="button">
+        <svg viewBox="0 0 24 24"><use xlink:href="#i-shield"/></svg><span data-i18n="nav.safety">Safety</span>
+        <i class="pip" id="pip-safety"></i>
+      </button>
+      <button class="rail__btn" data-focusable data-nav-group="rail" data-section="recovery" type="button">
+        <svg viewBox="0 0 24 24"><use xlink:href="#i-recovery"/></svg><span data-i18n="nav.recovery">Recovery</span>
+      </button>
+      <button class="rail__btn" data-focusable data-nav-group="rail" data-section="settings" type="button">
+        <svg viewBox="0 0 24 24"><use xlink:href="#i-settings"/></svg><span data-i18n="nav.settings">Settings</span>
+      </button>
+    </div>
+
+    <div class="rail__foot">
+      <button class="icon-btn" id="btn-log-drawer" data-focusable data-nav-group="rail" type="button" title="Developer log (tilde)">
+        <svg viewBox="0 0 24 24"><use xlink:href="#i-terminal"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ============================================================ stage ==== -->
+  <main class="stage">
+
+    <header class="topbar">
+      <div class="topbar__title">
+        <h1 id="section-title" data-i18n="nav.library">Library</h1>
+        <p id="section-sub"></p>
+      </div>
+      <div class="topbar__meta">
+        <span class="count-chip" id="chip-console"><i class="pip"></i> <span>connecting</span></span>
+        <span class="count-chip" id="chip-storage">storage</span>
+        <span class="count-chip" id="chip-rate">idle</span>
+      </div>
+    </header>
+
+    <!-- ------------------------------------------------------- LIBRARY ---- -->
+    <section class="section is-active" id="section-library">
+      <div class="toolbar">
+        <div class="search">
+          <input class="input" id="library-search" type="search" data-focusable data-nav-group="library-tools"
+                 data-osk-label="Search library" placeholder="Search titles, IDs, tags" autocomplete="off">
+        </div>
+        <select class="select" id="library-sort" data-focusable data-nav-group="library-tools">
+          <option value="title">A - Z</option>
+          <option value="size">Largest first</option>
+          <option value="recent">Recently added</option>
+          <option value="category">Category</option>
+        </select>
+        <select class="select" id="library-category" data-focusable data-nav-group="library-tools">
+          <option value="">All categories</option>
+        </select>
+        <button class="btn" id="library-favorites" data-focusable data-nav-group="library-tools" type="button">
+          <svg viewBox="0 0 24 24"><use xlink:href="#i-star"/></svg><span>Pinned only</span>
+        </button>
+        <div class="toolbar__spacer"></div>
+        <button class="btn" id="library-rescan" data-focusable data-nav-group="library-tools" type="button">
+          <svg viewBox="0 0 24 24"><use xlink:href="#i-refresh"/></svg><span>Rescan</span>
+        </button>
+        <button class="btn" id="library-add-url" data-focusable data-nav-group="library-tools" type="button">
+          <svg viewBox="0 0 24 24"><use xlink:href="#i-plus"/></svg><span>Add link</span>
+        </button>
+        <button class="btn btn--accent" id="library-queue-all" data-focusable data-nav-group="library-tools" type="button">
+          <svg viewBox="0 0 24 24"><use xlink:href="#i-download"/></svg><span>Queue all shown</span>
+        </button>
+        <span class="count-chip" id="library-count">0 items</span>
+      </div>
+
+      <div class="scroll">
+        <div class="grid" id="library-grid"></div>
+        <div class="empty hidden" id="library-empty">
+          <h3>No packages found</h3>
+          <p id="library-empty-detail"></p>
+          <button class="btn btn--accent" data-focusable data-nav-group="library" id="library-empty-settings" type="button">
+            Open settings
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- --------------------------------------------------------- QUEUE ---- -->
+    <section class="section" id="section-queue">
+      <div class="toolbar toolbar--wrap">
+        <div class="inline">
+          <span class="small muted">Transfer limit</span>
+          <div class="inline" id="throttle-presets"></div>
+        </div>
+        <div class="toolbar__spacer"></div>
+        <div class="inline">
+          <span class="small muted">Concurrent</span>
+          <select class="select" id="queue-concurrency" data-focusable data-nav-group="queue-tools">
+            <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option>
+          </select>
+        </div>
+        <div class="toolbar__spacer"></div>
+        <button class="btn" id="queue-clear" data-focusable data-nav-group="queue-tools" type="button">
+          <svg viewBox="0 0 24 24"><use xlink:href="#i-trash"/></svg><span>Clear finished</span>
+        </button>
+        <span class="count-chip" id="queue-summary">empty</span>
+      </div>
+
+      <div class="scroll">
+        <div class="stack">
+          <div class="rows" id="queue-rows"></div>
+          <div class="empty hidden" id="queue-empty">
+            <h3>Nothing queued</h3>
+            <p>Pick a package in the Library and press Cross to install, or Triangle to queue without leaving the grid.</p>
+          </div>
+
+          <div class="panel" id="history-panel">
+            <div class="panel__head">
+              <div>
+                <h2>Install history</h2>
+                <p>Last <span id="history-limit">200</span> finished transfers, newest first.</p>
+              </div>
+              <span class="count-chip" id="history-count">0</span>
+            </div>
+            <div class="rows" id="history-rows"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------- CONSOLE ---- -->
+    <section class="section" id="section-console">
+      <div class="toolbar">
+        <button class="btn" id="console-refresh" data-focusable data-nav-group="console-tools" type="button">
+          <svg viewBox="0 0 24 24"><use xlink:href="#i-refresh"/></svg><span>Refresh</span>
+        </button>
+        <span class="count-chip" id="console-mode">mode</span>
+        <span class="count-chip" id="console-target">target</span>
+      </div>
+
+      <div class="scroll">
+        <div class="panel-grid">
+          <div class="panel">
+            <div class="panel__head">
+              <div><h2>Storage</h2><p>Console volumes when etaHEN exposes them, plus this PC.</p></div>
+            </div>
+            <div class="stack" id="storage-meters"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel__head">
+              <div><h2>Hardware</h2><p>Temperature, fan and load, read from the control daemon.</p></div>
+            </div>
+            <div class="stack" id="hardware-metrics"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel__head">
+              <div><h2>Connection</h2><p>etaHEN handshake state and the watchdog's view.</p></div>
+            </div>
+            <dl class="kv" id="console-kv"></dl>
+          </div>
+
+          <div class="panel">
+            <div class="panel__head">
+              <div><h2>Kernel log</h2><p>Lines from the control socket, newest last.</p></div>
+              <button class="btn btn--ghost" id="klog-refresh" data-focusable data-nav-group="console" type="button">Fetch</button>
+            </div>
+            <div id="klog-lines" class="findings"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel__head">
+              <div><h2>Session activity</h2><p>What this hub has done, kept locally and cleared by the wipe.</p></div>
+              <button class="btn btn--ghost" id="activity-refresh" data-focusable data-nav-group="console" type="button">Refresh</button>
+            </div>
+            <div class="rows" id="activity-rows"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------- BROWSER ---- -->
+    <section class="section" id="section-browser">
+      <div class="browser">
+        <div class="browser__bar">
+          <button class="icon-btn" id="browser-home" data-focusable data-nav-group="browser-bar" type="button" title="Home">
+            <svg viewBox="0 0 24 24"><use xlink:href="#i-home"/></svg>
+          </button>
+          <button class="icon-btn" id="browser-back" data-focusable data-nav-group="browser-bar" type="button" title="Back">
+            <svg viewBox="0 0 24 24"><use xlink:href="#i-back"/></svg>
+          </button>
+          <button class="icon-btn" id="browser-forward" data-focusable data-nav-group="browser-bar" type="button" title="Forward">
+            <svg viewBox="0 0 24 24"><use xlink:href="#i-forward"/></svg>
+          </button>
+          <input class="input" id="browser-url" data-focusable data-nav-group="browser-bar"
+                 data-osk-label="Address" placeholder="https://" autocomplete="off" spellcheck="false">
+          <button class="btn btn--accent" id="browser-go" data-focusable data-nav-group="browser-bar" type="button">Go</button>
+          <button class="icon-btn" id="browser-fullscreen" data-focusable data-nav-group="browser-bar" type="button" title="Fullscreen">
+            <svg viewBox="0 0 24 24"><use xlink:href="#i-expand"/></svg>
+          </button>
+        </div>
+
+        <div class="browser__frame-wrap">
+          <iframe id="browser-frame" title="Embedded browser"
+                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups-to-escape-sandbox"
+                  referrerpolicy="no-referrer"></iframe>
+          <div class="browser__overlay is-visible" id="browser-overlay">
+            <div class="stack">
+              <h3 id="browser-overlay-title">Nothing loaded</h3>
+              <p class="muted small" id="browser-overlay-text">
+                Type an address above and press Go. Many sites refuse to be embedded; if one
+                does, this panel says so instead of showing a blank frame.
+              </p>
+              <div class="inline" id="browser-overlay-actions"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-grid">
+          <div class="panel">
+            <div class="panel__head">
+              <div><h2>Bookmarks</h2><p>Stored in configs.json, reachable with the D-pad.</p></div>
+              <button class="btn btn--ghost" id="browser-bookmark-add" data-focusable data-nav-group="browser" type="button">
+                <svg viewBox="0 0 24 24"><use xlink:href="#i-bookmark"/></svg><span>Bookmark current</span>
+              </button>
+            </div>
+            <div class="wrap-inline" id="browser-bookmarks"></div>
+          </div>
+          <div class="panel">
+            <div class="panel__head">
+              <div><h2>History</h2><p>Local only. Cleared by the emergency wipe.</p></div>
+              <button class="btn btn--ghost" id="browser-history-clear" data-focusable data-nav-group="browser" type="button">Clear</button>
+            </div>
+            <div class="rows" id="browser-history"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- -------------------------------------------------------- SAFETY ---- -->
+    <section class="section" id="section-safety">
+      <div class="toolbar">
+        <button class="btn" id="safety-audit" data-focusable data-nav-group="safety-tools" type="button">
+          <svg viewBox="0 0 24 24"><use xlink:href="#i-shield"/></svg><span>Re-run air-gap audit</span>
+        </button>
+        <button class="btn" id="safety-probe" data-focusable data-nav-group="safety-tools" type="button">
+          <span>Probe PSN reachability</span>
+        </button>
+        <div class="toolbar__spacer"></div>
+        <span class="count-chip" id="safety-checklist-chip">checklist</span>
+      </div>
+
+      <div class="scroll">
+        <div class="stack">
+          <div class="panel" id="safety-headline">
+            <div class="panel__head">
+              <div>
+                <h2 id="safety-level-text">Checks incomplete</h2>
+                <p id="safety-disclaimer"></p>
+              </div>
+              <i class="pip" id="safety-level-pip"></i>
+            </div>
+          </div>
+
+          <div class="panel-grid panel-grid--wide">
+            <div class="panel">
+              <div class="panel__head"><div><h2>Verified here</h2><p>Machine-checked facts.</p></div></div>
+              <ul class="claims claims--verified" id="safety-verified"></ul>
+            </div>
+            <div class="panel">
+              <div class="panel__head"><div><h2>Not verified</h2><p>What this hub cannot know.</p></div></div>
+              <ul class="claims claims--unverified" id="safety-unverified"></ul>
+            </div>
+          </div>
+
+          <div class="panel hidden" id="safety-warnings-panel">
+            <div class="panel__head"><div><h2>Warnings</h2><p>Act on these.</p></div></div>
+            <ul class="claims claims--warning" id="safety-warnings"></ul>
+          </div>
+
+          <div class="panel-grid">
+            <div class="panel">
+              <div class="panel__head">
+                <div><h2>Air-gap audit</h2><p id="audit-summary"></p></div>
+                <span class="badge" id="audit-badge">-</span>
+              </div>
+              <div class="findings" id="audit-findings"></div>
+              <p class="small muted" id="audit-exception"></p>
+            </div>
+
+            <div class="panel">
+              <div class="panel__head">
+                <div><h2>Network binding</h2><p>Where the hub listens and who it answers.</p></div>
+              </div>
+              <dl class="kv" id="safety-binding"></dl>
+            </div>
+
+            <div class="panel">
+              <div class="panel__head">
+                <div><h2>PSN reachability</h2><p>From this PC only, and only when you ask.</p></div>
+              </div>
+              <div class="stack" id="safety-probe-results"></div>
+            </div>
+
+            <div class="panel" id="pihole-panel">
+              <div class="panel__head">
+                <div><h2>DNS sinkhole</h2><p>Pi-hole / AdGuard summary, if configured.</p></div>
+              </div>
+              <dl class="kv" id="pihole-kv"></dl>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel__head">
+              <div>
+                <h2>Console and router hardening</h2>
+                <p>These are the settings that actually determine exposure. Tick them off as you confirm each one.</p>
+              </div>
+              <span class="count-chip" id="checklist-progress">0 / 0</span>
+            </div>
+            <div class="checklist" id="safety-checklist"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------ RECOVERY ---- -->
+    <section class="section" id="section-recovery">
+      <div class="toolbar">
+        <span class="count-chip" id="wipe-pin-chip">PIN</span>
+        <span class="count-chip" id="wipe-target-chip">targets</span>
+        <div class="toolbar__spacer"></div>
+        <span class="small muted">Nothing here runs without a PIN, a typed phrase, and a dry run.</span>
+      </div>
+
+      <div class="scroll">
+        <div class="stack">
+          <div class="callout callout--danger">
+            <strong>What the emergency wipe does, exactly.</strong>
+            It deletes the paths listed in <code>wipe.allowlist</code> on this PC - this hub's logs,
+            queue state, library overrides and browser history by default - then stops the server.
+            It cannot touch its own source, your packages, or anything outside the allowlist, and it
+            always shows you the file list first. Console-side paths are only touched if you configure
+            both <code>wipe.console_paths</code> and an <code>etahen.endpoints.delete_path</code> endpoint.
+          </div>
+
+          <div class="panel-grid panel-grid--wide">
+            <div class="panel">
+              <div class="panel__head">
+                <div><h2>Master PIN</h2><p>Stored as a salted PBKDF2-SHA256 hash, never in plain text.</p></div>
+                <svg viewBox="0 0 24 24" width="22" height="22"><use xlink:href="#i-lock"/></svg>
+              </div>
+              <div class="stack" id="pin-form">
+                <div class="field hidden" id="pin-current-field">
+                  <label for="pin-current">Current PIN</label>
+                  <input class="input" id="pin-current" type="password" inputmode="numeric"
+                         data-focusable data-nav-group="recovery" data-osk-label="Current PIN" autocomplete="off">
+                </div>
+                <div class="field">
+                  <label for="pin-new">New PIN (4-32 characters)</label>
+                  <input class="input" id="pin-new" type="password" inputmode="numeric"
+                         data-focusable data-nav-group="recovery" data-osk-label="New PIN" autocomplete="off">
+                </div>
+                <button class="btn btn--accent" id="pin-save" data-focusable data-nav-group="recovery" type="button">Save PIN</button>
+                <p class="small muted" id="pin-status"></p>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel__head">
+                <div><h2>Emergency wipe</h2><p>Dry run first. Always.</p></div>
+              </div>
+              <div class="stack">
+                <div class="field">
+                  <label for="wipe-pin">PIN</label>
+                  <input class="input" id="wipe-pin" type="password" inputmode="numeric"
+                         data-focusable data-nav-group="recovery" data-osk-label="PIN" autocomplete="off">
+                </div>
+                <div class="field">
+                  <label for="wipe-phrase">Confirmation phrase</label>
+                  <input class="input" id="wipe-phrase" type="text"
+                         data-focusable data-nav-group="recovery" data-osk-label="Confirmation phrase" autocomplete="off">
+                  <span class="hint" id="wipe-phrase-hint"></span>
+                </div>
+                <button class="btn btn--danger btn--block" id="wipe-plan" data-focusable data-nav-group="recovery" type="button">
+                  Run dry run
+                </button>
+                <p class="small muted" id="wipe-status"></p>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel__head">
+              <div><h2>What would be deleted</h2><p>Live preview from your allowlist - no credentials needed to look.</p></div>
+              <span class="count-chip" id="wipe-total">0 B</span>
+            </div>
+            <div class="stack" id="wipe-targets"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel__head">
+              <div><h2 id="safe-mode-title">Safe Mode recovery</h2><p id="safe-mode-intro"></p></div>
+            </div>
+            <div class="stack">
+              <h3 class="small dim">Entering Safe Mode</h3>
+              <ol class="steps" id="safe-mode-entering"></ol>
+              <h3 class="small dim">The seven options</h3>
+              <div class="option-table" id="safe-mode-options"></div>
+              <h3 class="small dim">Reinstalling from USB</h3>
+              <ol class="steps" id="safe-mode-usb"></ol>
+              <div class="callout callout--warn" id="safe-mode-cautions"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ------------------------------------------------------ SETTINGS ---- -->
+    <section class="section" id="section-settings">
+      <div class="toolbar">
+        <span class="count-chip" id="settings-version">v</span>
+        <span class="count-chip" id="settings-host">host</span>
+        <div class="toolbar__spacer"></div>
+        <button class="btn" id="settings-update-check" data-focusable data-nav-group="settings-tools" type="button">
+          <svg viewBox="0 0 24 24"><use xlink:href="#i-refresh"/></svg><span>Check for staged update</span>
+        </button>
+        <button class="btn" id="settings-backup" data-focusable data-nav-group="settings-tools" type="button">
+          <svg viewBox="0 0 24 24"><use xlink:href="#i-save"/></svg><span>Back up save data</span>
+        </button>
+      </div>
+
+      <div class="scroll">
+        <div class="panel-grid">
+
+          <div class="panel">
+            <div class="panel__head"><div><h2>Console</h2><p>Where etaHEN lives.</p></div></div>
+            <div class="stack">
+              <div class="field">
+                <label for="set-mode">etaHEN mode</label>
+                <select class="select" id="set-mode" data-focusable data-nav-group="settings">
+                  <option value="mock">mock - built-in simulator, no console needed</option>
+                  <option value="live">live - talk to the real console</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="set-console-ip">Console IP</label>
+                <input class="input" id="set-console-ip" data-focusable data-nav-group="settings" data-osk-label="Console IP" autocomplete="off">
+              </div>
+              <div class="field">
+                <label for="set-installer-port">Installer port</label>
+                <input class="input" id="set-installer-port" inputmode="numeric" data-focusable data-nav-group="settings" data-osk-label="Installer port">
+              </div>
+              <div class="field">
+                <label for="set-control-port">Control / klog port</label>
+                <input class="input" id="set-control-port" inputmode="numeric" data-focusable data-nav-group="settings" data-osk-label="Control port">
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel__head"><div><h2>Library</h2><p>One folder per line.</p></div></div>
+            <div class="stack">
+              <div class="field">
+                <label for="set-pkg-dirs">Package directories</label>
+                <textarea class="input" id="set-pkg-dirs" rows="4" data-focusable data-nav-group="settings" spellcheck="false"></textarea>
+                <span class="hint">Use forward slashes or double backslashes. <code>{app}</code> means this folder.</span>
+              </div>
+              <div class="field">
+                <label for="set-scan-interval">Scan interval (seconds)</label>
+                <input class="input" id="set-scan-interval" inputmode="numeric" data-focusable data-nav-group="settings">
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel__head"><div><h2>Interface</h2><p>Tuned for your TV.</p></div></div>
+            <div class="stack">
+              <button class="toggle" id="set-performance" data-focusable data-nav-group="settings" type="button">
+                <span class="toggle__track"></span>
+                <span class="toggle__label"><strong>Performance mode</strong><span>Drops animations and the ambient wash. Use it if the console browser feels heavy.</span></span>
+              </button>
+              <button class="toggle" id="set-sfx" data-focusable data-nav-group="settings" type="button">
+                <span class="toggle__track"></span>
+                <span class="toggle__label"><strong>Navigation sounds</strong><span>Synthesised in-browser; no audio files are loaded.</span></span>
+              </button>
+              <button class="toggle" id="set-rumble" data-focusable data-nav-group="settings" type="button">
+                <span class="toggle__track"></span>
+                <span class="toggle__label"><strong>Controller rumble</strong><span>Used sparingly, and only if the pad reports support.</span></span>
+              </button>
+              <div class="field">
+                <label for="set-cards">Cards per row (1080p)</label>
+                <input class="input" id="set-cards" inputmode="numeric" data-focusable data-nav-group="settings">
+              </div>
+              <div class="field">
+                <label for="set-overscan">TV overscan padding (%)</label>
+                <input class="input" id="set-overscan" inputmode="numeric" data-focusable data-nav-group="settings">
+              </div>
+              <div class="field">
+                <label for="set-language">Language</label>
+                <select class="select" id="set-language" data-focusable data-nav-group="settings"></select>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel__head"><div><h2>Background music</h2><p>Plays files from the local <code>bgm/</code> folder.</p></div>
+              <svg viewBox="0 0 24 24" width="22" height="22"><use xlink:href="#i-music"/></svg>
+            </div>
+            <div class="stack">
+              <button class="toggle" id="set-bgm" data-focusable data-nav-group="settings" type="button">
+                <span class="toggle__track"></span>
+                <span class="toggle__label"><strong>Enable player</strong><span id="bgm-count">No tracks found</span></span>
+              </button>
+              <div class="inline" id="bgm-controls"></div>
+              <div class="field">
+                <label for="set-bgm-volume">Volume</label>
+                <input class="input" id="set-bgm-volume" type="range" min="0" max="100" data-focusable data-nav-group="settings">
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel__head"><div><h2>Safety</h2><p>Probing is off until you turn it on.</p></div></div>
+            <div class="stack">
+              <button class="toggle" id="set-probing" data-focusable data-nav-group="settings" type="button">
+                <span class="toggle__track"></span>
+                <span class="toggle__label"><strong>Active PSN probing</strong><span>When on, this PC makes outbound requests during a probe.</span></span>
+              </button>
+              <div class="field">
+                <label for="set-log-retention">Log retention (days)</label>
+                <input class="input" id="set-log-retention" inputmode="numeric" data-focusable data-nav-group="settings">
+              </div>
+              <div class="field">
+                <label for="set-pihole-url">Pi-hole base URL (optional)</label>
+                <input class="input" id="set-pihole-url" data-focusable data-nav-group="settings" data-osk-label="Pi-hole URL" autocomplete="off">
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel__head"><div><h2>Transfers</h2><p>Retries and the serving ceiling.</p></div></div>
+            <div class="stack">
+              <div class="field">
+                <label for="set-retries">Max retries</label>
+                <input class="input" id="set-retries" inputmode="numeric" data-focusable data-nav-group="settings">
+              </div>
+              <div class="field">
+                <label for="set-backoff">Retry backoff (seconds)</label>
+                <input class="input" id="set-backoff" inputmode="numeric" data-focusable data-nav-group="settings">
+              </div>
+              <div class="field">
+                <label for="set-backup-dirs">Save-data backup sources</label>
+                <textarea class="input" id="set-backup-dirs" rows="3" data-focusable data-nav-group="settings" spellcheck="false"></textarea>
+                <span class="hint">Folders on this PC to bundle when you press "Back up save data".</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="panel" id="settings-save-bar">
+          <div class="spread">
+            <p class="small muted" id="settings-note">Changes apply immediately and are written to configs.json.</p>
+            <button class="btn btn--accent" id="settings-save" data-focusable data-nav-group="settings" type="button">Save settings</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============================================================ overlays === -->
+
+<div id="toasts" data-position="{{ toast_position }}" aria-live="polite"></div>
+
+<div id="modal-root" role="dialog" aria-modal="true"></div>
+
+<div id="osk" role="group" aria-label="On-screen keyboard">
+  <div class="osk__label" id="osk-label">Input</div>
+  <div class="osk__preview" id="osk-preview"><span class="caret"></span></div>
+  <div class="osk__rows" id="osk-rows"></div>
+  <div class="osk__footer">
+    <span>Cross - type</span><span>Square - backspace</span><span>Triangle - space</span>
+    <span>R1 - shift</span><span>Options - done</span><span>Circle - cancel</span>
+  </div>
+</div>
+
+<div id="log-drawer">
+  <header>
+    <div class="inline">
+      <svg viewBox="0 0 24 24" width="18" height="18"><use xlink:href="#i-terminal"/></svg>
+      <strong class="small">Backend log</strong>
+      <span class="small muted" id="log-meta"></span>
+    </div>
+    <div class="inline">
+      <button class="btn btn--ghost" id="log-klog" data-focusable data-nav-group="log" type="button">Kernel log</button>
+      <button class="icon-btn" id="log-close" data-focusable data-nav-group="log" type="button"><svg viewBox="0 0 24 24"><use xlink:href="#i-x"/></svg></button>
+    </div>
+  </header>
+  <div id="log-lines"></div>
+</div>
+
+<div class="hints" id="button-hints"></div>
+
+<!-- Load order matters: utilities, then subsystems, then the controller, then app. -->
+<script src="/static/js/i18n.js"></script>
+<script src="/static/js/format.js"></script>
+<script src="/static/js/api.js"></script>
+<script src="/static/js/toast.js"></script>
+<script src="/static/js/sfx.js"></script>
+<script src="/static/js/nav.js"></script>
+<script src="/static/js/osk.js"></script>
+<script src="/static/js/modal.js"></script>
+<script src="/static/js/library.js"></script>
+<script src="/static/js/transfers.js"></script>
+<script src="/static/js/consoleview.js"></script>
+<script src="/static/js/browser.js"></script>
+<script src="/static/js/safety.js"></script>
+<script src="/static/js/recovery.js"></script>
+<script src="/static/js/settings.js"></script>
+<script src="/static/js/logs.js"></script>
+<script src="/static/js/bgm.js"></script>
+<script src="/static/js/gamepad.js"></script>
+<script src="/static/js/app.js"></script>
+</body>
+</html>

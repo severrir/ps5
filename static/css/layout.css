@@ -1,0 +1,320 @@
+/* ===========================================================================
+   Layout: overscan frame, icon rail, stage, section switching, log drawer.
+   =========================================================================== */
+
+#app {
+  display: grid;
+  grid-template-columns: var(--rail-width) 1fr;
+  height: 100%;
+  /* TV overscan safe area. Set from configs.json via a body data attribute. */
+  padding: calc(var(--overscan) * 0.62) var(--overscan);
+  position: relative;
+  z-index: 1;
+}
+
+/* Ambient wash behind everything, tinted by the focused card. Pure CSS, no
+   canvas: the console browser pays for every animated pixel. */
+#ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(85% 60% at 18% 0%, var(--ambient) 0%, transparent 62%),
+    radial-gradient(70% 55% at 100% 100%, rgba(0, 78, 147, 0.22) 0%, transparent 60%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+  transition: background var(--t-slow) var(--ease);
+}
+
+/* ------------------------------------------------------------------ rail -- */
+
+.rail {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 18px;
+  padding: 10px 8px;
+  background: linear-gradient(180deg, rgba(22, 27, 34, 0.9), rgba(11, 14, 20, 0.6));
+  border: 1px solid var(--hairline-soft);
+  border-radius: var(--radius-lg);
+  margin-right: 22px;
+}
+
+.rail__brand {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 10px 0 4px;
+  color: var(--text-dim);
+}
+
+.rail__brand strong {
+  font-size: var(--fs-lead);
+  letter-spacing: 0.14em;
+  color: var(--text);
+}
+
+.rail__brand span {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.rail__nav {
+  display: grid;
+  grid-auto-rows: max-content;
+  gap: 6px;
+  align-content: start;
+}
+
+.rail__btn {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  padding: 12px 4px 10px;
+  border-radius: var(--radius);
+  color: var(--text-dim);
+  position: relative;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease),
+    transform var(--t-fast) var(--ease);
+}
+
+.rail__btn svg {
+  width: 26px;
+  height: 26px;
+  display: block;
+}
+
+.rail__btn span {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.rail__btn:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.rail__btn.is-active {
+  color: var(--text);
+  background: var(--accent-wash);
+}
+
+.rail__btn.is-active::before {
+  content: "";
+  position: absolute;
+  left: -9px;
+  top: 16%;
+  bottom: 16%;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--accent-bright);
+}
+
+.rail__btn .pip {
+  position: absolute;
+  top: 9px;
+  right: 16px;
+}
+
+.rail__foot {
+  display: grid;
+  gap: 8px;
+  padding: 6px 2px 4px;
+  justify-items: center;
+}
+
+/* ----------------------------------------------------------------- stage -- */
+
+.stage {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-width: 0;
+  min-height: 0;
+}
+
+.topbar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 0 4px 16px;
+}
+
+.topbar__title {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.topbar__title h1 {
+  font-size: var(--fs-title);
+}
+
+.topbar__title p {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--fs-small);
+}
+
+.topbar__meta {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: max-content;
+  align-items: center;
+  gap: 10px;
+}
+
+.section {
+  display: none;
+  min-height: 0;
+  min-width: 0;
+}
+
+.section.is-active {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 14px;
+  min-height: 0;
+}
+
+.scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  padding: 4px 4px 28px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ------------------------------------------------------------ log drawer -- */
+
+#log-drawer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 42vh;
+  z-index: 60;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  background: rgba(7, 9, 16, 0.97);
+  border-top: 1px solid var(--hairline);
+  box-shadow: 0 -18px 40px rgba(0, 0, 0, 0.6);
+  transform: translateY(100%);
+  transition: transform var(--t-base) var(--ease);
+}
+
+#log-drawer.is-open {
+  transform: translateY(0);
+}
+
+#log-drawer header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+#log-lines {
+  overflow: auto;
+  padding: 10px 18px 18px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: var(--fs-micro);
+  line-height: 1.65;
+  color: var(--text-dim);
+}
+
+.log-line {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.log-line .lvl {
+  display: inline-block;
+  min-width: 62px;
+  color: var(--muted);
+}
+
+.log-line.lvl-WARNING .lvl {
+  color: var(--warn);
+}
+
+.log-line.lvl-ERROR .lvl,
+.log-line.lvl-CRITICAL .lvl {
+  color: var(--danger);
+}
+
+.log-line .ts {
+  color: var(--muted);
+  margin-right: 10px;
+}
+
+/* ------------------------------------------------------------------ misc -- */
+
+.hints {
+  position: fixed;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  z-index: 40;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: max-content;
+  gap: 16px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: var(--surface-glass);
+  border: 1px solid var(--hairline-soft);
+  font-size: var(--fs-micro);
+  color: var(--text-dim);
+  box-shadow: var(--shadow-1);
+  max-width: 92vw;
+  overflow: hidden;
+}
+
+.hints.is-hidden {
+  display: none;
+}
+
+/* Performance mode: kill every transition and shadow-heavy effect. The console
+   browser is a mobile-class GPU driving a 4K panel. */
+body[data-performance="1"] #ambient {
+  background: linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+  transition: none;
+}
+
+body[data-performance="1"] * {
+  transition: none !important;
+  animation: none !important;
+}
+
+body[data-performance="1"] .card:focus,
+body[data-performance="1"] .card.is-focused {
+  transform: none;
+}
+
+/* 1080p is the common case; tighten the rail and gutters a touch below that. */
+@media (max-width: 1400px) {
+  :root {
+    --rail-width: 92px;
+  }
+  .rail {
+    margin-right: 16px;
+  }
+}
+
+@media (max-width: 900px) {
+  #app {
+    grid-template-columns: 76px 1fr;
+    padding: 12px;
+  }
+  :root {
+    --rail-width: 76px;
+  }
+  .rail__btn span {
+    display: none;
+  }
+}

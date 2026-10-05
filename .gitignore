@@ -1,0 +1,28 @@
+# Local machine configuration — contains your LAN/console IPs and PIN hash.
+configs.json
+
+# Runtime state
+data/
+logs/
+*.log
+
+# User-supplied media
+covers/*
+!covers/.gitkeep
+bgm/*
+!bgm/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Packages you drop in (the folder itself is tracked, its contents are not)
+packages/*
+!packages/.gitkeep
+!packages/README.txt
+
+# Save-data bundles
+backups/

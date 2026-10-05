@@ -1,0 +1,8 @@
+# PS5 Command Hub — runtime dependencies.
+# Deliberately minimal: no HTTP client library (stdlib urllib is used instead),
+# no template/asset pipeline, nothing that phones home.
+flask==3.0.3
+cachetools==5.3.3
+
+# Development only (not required to run the hub):
+#   pytest==8.2.0

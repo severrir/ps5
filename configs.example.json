@@ -1,0 +1,114 @@
+{
+  "_about": "PS5 Command Hub configuration. Copy to configs.json (the hub does this automatically on first run) and edit. Paths may use the {app} token, which expands to the folder containing run.py. See README.md for the full field reference.",
+  "version": "1.0.0",
+
+  "server": {
+    "host_ip": "auto",
+    "port": 8080,
+    "subnet_allowlist": ["192.168.0.0/16", "10.0.0.0/8", "172.16.0.0/12", "127.0.0.0/8"],
+    "enforce_subnet_allowlist": true
+  },
+
+  "etahen": {
+    "mode": "mock",
+    "console_ip": "192.168.1.50",
+    "installer_port": 12800,
+    "control_port": 9090,
+    "timeout_seconds": 8,
+    "watchdog_interval_seconds": 10,
+    "watchdog_backoff_max_seconds": 120,
+    "mock_bind_ip": "127.0.0.1",
+    "endpoints": {
+      "install": {
+        "port": "installer",
+        "method": "POST",
+        "path": "/api/install",
+        "payload_template": { "type": "direct", "packages": ["{url}"] }
+      },
+      "progress": { "port": "installer", "method": "GET", "path": "/api/progress" },
+      "task_control": {
+        "port": "installer",
+        "method": "POST",
+        "path": "/api/task",
+        "payload_template": { "task_id": "{task_id}", "state": "{state}" }
+      },
+      "storage": { "port": "installer", "method": "GET", "path": "/api/storage" },
+      "heartbeat": { "port": "control", "method": "GET", "path": "/api/heartbeat" },
+      "klog": { "port": "control", "method": "GET", "path": "/api/klog" },
+      "hardware": { "port": "control", "method": "GET", "path": "/api/hardware" }
+    }
+  },
+
+  "library": {
+    "pkg_directories": ["{app}/packages"],
+    "scan_interval_seconds": 60,
+    "recursive": true,
+    "cache_ttl_seconds": 300,
+    "max_items": 5000,
+    "extensions": [".pkg"]
+  },
+
+  "transfers": {
+    "max_concurrent": 1,
+    "max_retries": 3,
+    "retry_backoff_seconds": 5,
+    "throttle_mbps": 0,
+    "throttle_presets_mbps": [5, 10, 25, 50, 0],
+    "history_limit": 200,
+    "chunk_bytes": 262144
+  },
+
+  "ui": {
+    "language": "en",
+    "performance_mode": false,
+    "overscan_percent": 5,
+    "cards_per_row": 5,
+    "poll_interval_ms": 1000,
+    "toast_position": "bottom-right",
+    "bgm_enabled": false,
+    "bgm_volume": 0.4,
+    "sfx_enabled": false,
+    "rumble_enabled": true,
+    "browser_home": "about:blank",
+    "browser_bookmarks": []
+  },
+
+  "safety": {
+    "active_probing": false,
+    "psn_domains": [
+      "playstation.net",
+      "playstation.com",
+      "sonyentertainmentnetwork.com",
+      "np.community.playstation.net",
+      "telemetry.sonyentertainmentnetwork.com"
+    ],
+    "probe_timeout_seconds": 3,
+    "pihole": { "enabled": false, "base_url": "", "api_token": "" },
+    "log_retention_days": 7,
+    "audit_allow_patterns": ["about:blank"]
+  },
+
+  "backup": {
+    "source_dirs": [],
+    "output_dir": "{app}/backups",
+    "keep_archives": 10
+  },
+
+  "wipe": {
+    "pin_salt": "",
+    "pin_hash": "",
+    "pin_iterations": 240000,
+    "confirm_phrase": "WIPE EVERYTHING",
+    "max_attempts": 5,
+    "lockout_minutes": 15,
+    "plan_ttl_seconds": 120,
+    "allowlist": [
+      "{app}/logs",
+      "{app}/data/transfers.json",
+      "{app}/data/library.json",
+      "{app}/data/browser_history.json",
+      "{app}/data/session_events.json"
+    ],
+    "console_paths": []
+  }
+}

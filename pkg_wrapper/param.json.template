@@ -1,0 +1,25 @@
+{
+  "//": "Copy to param.json and replace every <placeholder>. See README.md.",
+
+  "applicationCategoryType": 0,
+  "titleId": "<TITLE_ID e.g. PPSA00001>",
+  "contentId": "<UP0001-<TITLE_ID>_00-0000000000000000>",
+  "contentVersion": "01.000.000",
+  "masterVersion": "01.00",
+  "requiredSystemSoftwareVersion": "01.000.000",
+
+  "titleName": "PS5 Command Hub",
+  "localizedParameters": {
+    "defaultLanguage": "en-US",
+    "en-US": {
+      "titleName": "PS5 Command Hub"
+    }
+  },
+
+  "hubUrl": "http://<PC_IP>:8080",
+
+  "pubtools": {
+    "creationDate": "<YYYY-MM-DD>",
+    "note": "Local dashboard launcher. Opens file:///app0/boot.html, which redirects to hubUrl."
+  }
+}
