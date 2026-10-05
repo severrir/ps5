@@ -290,6 +290,11 @@ template. Also confirm the console can actually reach the URL in the banner — 
 started the hub with `--port`, the advertised URL follows the override, but a firewall
 rule may not.
 
+**`localhost` does not answer.** With `host_ip: "auto"` the hub binds to your LAN
+address specifically, not to every interface, so `http://localhost:8080` has nothing
+listening. Use the address the banner prints — that is also the one the console needs.
+Set `host_ip` to `127.0.0.1` if you only ever want loopback.
+
 **403 from the hub.** Your client is outside `server.subnet_allowlist`. Add its
 subnet, or set `enforce_subnet_allowlist` to `false` if you understand the
 consequence — the Safety tab will flag it as a warning while it is off.
