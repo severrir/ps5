@@ -111,8 +111,10 @@ class MockState:
 
     def _download(self, task_id: str, url: str) -> None:
         """Stream the package to /dev/null, counting bytes and honouring pauses."""
+        # A short open timeout: until this resolves the task sits at 0% with no
+        # explanation, and Windows alone takes ~2s to refuse a dead local port.
         try:
-            with urlrequest.urlopen(url, timeout=10) as response:
+            with urlrequest.urlopen(url, timeout=5) as response:
                 length = response.headers.get("Content-Length")
                 with self._lock:
                     task = self._tasks.get(task_id)

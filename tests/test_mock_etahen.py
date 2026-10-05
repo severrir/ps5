@@ -226,11 +226,31 @@ def test_mock_actually_downloads_the_package(sandbox, tmp_path):
 
 
 def test_mock_falls_back_to_simulation_for_an_unfetchable_url(sandbox):
-    """A remote link the mock cannot reach must still show progress, not hang."""
+    """A link the mock cannot reach falls back to the simulated clock.
+
+    The fallback waits for the connect attempt to resolve rather than racing it: a
+    refused connection to a dead local port takes about two seconds on Windows, and
+    reporting invented progress before then would be exactly the behaviour the
+    pending state exists to prevent.
+    """
     mock_etahen.reset_state()
     task = mock_etahen.STATE.create_task("http://127.0.0.1:1/unreachable.pkg")
-    time.sleep(0.3)
 
+    # While the connect is outstanding, progress must stay at zero.
+    early = mock_etahen.STATE.snapshot_task(task["id"])
+    assert early["installed_bytes"] == 0
+    assert early["rate_bps"] == 0
+
+    deadline = time.time() + 15
+    while time.time() < deadline:
+        with mock_etahen.STATE._lock:
+            resolved = mock_etahen.STATE._tasks[task["id"]].get("fetch") != "pending"
+        if resolved:
+            break
+        time.sleep(0.1)
+    assert resolved, "the fetch attempt should have resolved by now"
+
+    time.sleep(0.2)
     snapshot = mock_etahen.STATE.snapshot_task(task["id"])
 
     assert snapshot["real_download"] is False

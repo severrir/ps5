@@ -48,8 +48,10 @@ PC .pkg files ──▶ hub ─────────────────�
 The hub never pushes bytes at the console. It hands etaHEN a URL on this PC
 (`http://<your-ip>:8080/pkg/<id>`) and the console pulls it. That is why:
 
-- **the bandwidth throttle genuinely works** — we own the socket, so a token bucket
-  on our side is a real ceiling, not a request;
+- **the bandwidth throttle genuinely works** — we own the socket, so shaping on our
+  side is a real ceiling, not a request. It allows a half-second burst, so the average
+  settles on the limit over a long transfer while a few-megabyte file may finish
+  slightly ahead of it;
 - **pause/resume is possible at all** — pausing cuts the byte stream (the package
   route answers `503`), and because the route honours `Range`, a console that
   re-requests with an offset continues instead of restarting;
